@@ -9,16 +9,7 @@ This version of the Needleman-Wunsch algorithm has been optimized to align miRNA
 
 ### Usage and options:
 ```
-everygff2tab [OPTIONS] ATTRIBUTE.. <GFF2/GFF3 >TSV
-
-Options:
-  -h, --help: show this help message and exit
-  -l, --list-attributes: list all the available attributes
-  -m STRING, --missing-value=STRING: write this STRING when an attribute is missing (default: NA)
-  -g STRING, --gff-version=STRING: STRING indicating the gff version (GFF2, GFF3)(default: GFF2)
-
-ATTRIBUTE: the tag identifying a given value in the "attribute" column in the GFF2/GFF3 file
-GFF2/GFF3: GFF file to parse
+...soon
 ```
 
 
