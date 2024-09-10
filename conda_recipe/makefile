@@ -18,6 +18,10 @@ platforms: $(PACKAGE)
 	mkdir $@
 	conda convert --platform all $< -o $@
 
+upload_noarch:  $(PACKAGE)
+	anaconda login;\
+	anaconda upload --user $(CONDA_USERNAME) $<;
+
 upload: platforms
 	PACKAGE_NAME=$$(basename $(PACKAGE));\
 	anaconda login;\
