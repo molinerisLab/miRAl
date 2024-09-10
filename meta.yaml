@@ -1,0 +1,22 @@
+{% set name = "miRAl" %}
+{% set version = "1.0" %}
+
+package:
+  name: "{{ name|lower }}"
+  version: "{{ version }}"
+
+build:
+    noarch: python
+
+source: 
+  path: ../src
+
+requirements:
+  host:
+    - python
+  run:
+    - python
+
+about:
+  home: https://github.com/molinerisLab/miRAl
+  summary: Tool to perform the Needleman-Wunsch algorithm to align miRNA sequences. This version of the Needleman-Wunsch algorithm has been optimized to align miRNA sequences, in particular it allows to weight the alignment of the seed region of the miRNA differently from the rest of the sequence.
