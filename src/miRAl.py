@@ -1,26 +1,26 @@
 #!/usr/bin/env python3
 
 #####################################################################################################################
-#                                                                                                                    #
-#                                             miRNA couples alignment tools                                            #
-#                                                                                                                    #
+#                                                                                                                   #
+#                                             miRNA couples alignment tools                                         #
+#                                                                                                                   #
 # Needleman-Wunsch alignment given a list of couples of miRNAs in .tsv format structured as follows:                #
-#                 mature miRNA1     |    mature miRNA2                                                                     #
-# and a fasta file containing the sequences of the miRNAs perform the alignmetn between the sequences                 #
-# of the two miRNAs in the couple                                                                                    #
-#                                                                                                                    #
-# output is a .tsv file structured as follows:                                                                        #
-#                 mature miRNA1     |    mature miRNA2     |    normalized_score                                            #
-#                                                                                                                    #
-#  -f -a options add a second output file in a simil-fasta format,                                                     #
-# where the header contains the names of the two aligned sequences                                                     #
+#                 mature miRNA1     |    mature miRNA2                                                              #
+# and a fasta file containing the sequences of the miRNAs perform the alignmetn between the sequences               #
+# of the two miRNAs in the couple                                                                                   #
+#                                                                                                                   #
+# output is a .tsv file structured as follows:                                                                      #
+#                 mature miRNA1     |    mature miRNA2     |    Needleman-Wunsch score                              #
+#                                                                                                                   #
+#  -f -a options add a second output file in a simil-FASTA format,                                                  #
+# where the header contains the names of the two aligned sequences                                                  #
 # while the "body" contains the alignment score and the alignment itself                                            #
-#                                                                                                                    #
-# Author: Leonardo Agasso, 2023                                                                                        #
-#                                                                                                                    #
+#                                                                                                                   #
+# Author: Leonardo Agasso, 2023                                                                                     #
+#                                                                                                                   #
 # idea from:                                                                                                        #
-# https://bmcgenomics.biomedcentral.com/articles/10.1186/1471-2164-13-218                                            #
-#                                                                                                                    #
+# https://bmcgenomics.biomedcentral.com/articles/10.1186/1471-2164-13-218                                           #
+#                                                                                                                   #
 #####################################################################################################################
 
 
@@ -43,8 +43,8 @@ from Bio.pairwise2 import format_alignment
 
 #______________________________________Global Variables & Parameters_________________________________________________
 # Ordered nucleotides to be substituted in seed
-nonseed_nt = "ACGU"    # standard nucleotides of a RNA sequence
-seed_nt = "ZVRB"        # A→Z, C→V, G→R, U→B : translation for the nucleotides in the seed
+nonseed_nt = "ACGU"    						# standard nucleotides of a RNA sequence
+seed_nt = "ZVRB"        					# A→Z, C→V, G→R, U→B : translation for the nucleotides in the seed
 all_nt = nonseed_nt+seed_nt
 
 seed_nt_map = {
@@ -60,7 +60,7 @@ seed_nt_map_reverse = {v: k for k, v in seed_nt_map.items()}
 
 
 #____________________________________________General Functions_______________________________________________________
-def ignore_broken_pipe(func):    # Avoid broken pipe error 
+def ignore_broken_pipe(func):    	# Avoid broken pipe error 
     try:
         func()
     except IOError as e:
@@ -69,32 +69,32 @@ def ignore_broken_pipe(func):    # Avoid broken pipe error
         else:
             raise
 
-
-def parse_args():    # Parse command line arguments
+def parse_args():    				# Parse command line arguments
     
     parser = OptionParser(usage=format_usage('''
         %prog [OPTIONS] fasta.fa [fasta2.fa] < couples.tsv >output.tsv
 
-        Perform an all-vs-all alignment (using the Needleman-Wunsch algorithm) between the sequences in FASTA,
-        returns a qFASTA file where the header contains the names of the two aligned sequences
+        Perform the alignment (using the Needleman-Wunsch algorithm) of miRNA pairs whose sequences are present in a FASTA file,
+        returns a FASTA file where the header contains the names of the two aligned sequences
         while the "body" contains the alignment score and the alignment itself.\033[0m
-        Available seed types are (\033[34mblue\033[0m identifies the seed, \033[31mred\033[0m is the last non-seed nucleotide at the 5'):
+        The alignment can weight differently the nucleotides in the miRNA seed,
+        available seed types are (\033[34mblue\033[0m identifies the seed, \033[31mred\033[0m is the last nucleotide at the 5'):
 
           •        \033[7m'8merA'\033[0m:                            \033[7m'8merB'\033[0m:
                            ...321                              ...321
-                      3'-...N\033[34mNNNNNNNN\033[0m\033[31mN\033[0m-5'                 3'-...N\033[34mNNNNNNNN\033[0mN\033[31mN\033[0m-5'                  
+                3'-...N\033[34mNNNNNNNN\033[0m\033[31mN\033[0m-5'                 3'-...N\033[34mNNNNNNNN\033[0mN\033[31mN\033[0m-5'                  
                        ||||||||                            |||||||| 
                 ORF...N\033[33mNNNNNNNN\033[0mN...                 ORF...N\033[33mNNNNNNNN\033[0mN...
 
           •        \033[7m'7merA'\033[0m (default):                  \033[7m'7merB'\033[0m:
                          ...321                               ...321
-                      3'-...N\033[34mNNNNNNN\033[0m\033[31mN\033[0m-5'              3'-...N\033[34mNNNNNNN\033[0mN\033[31mN\033[0m-5'
+                3'-...N\033[34mNNNNNNN\033[0m\033[31mN\033[0m-5'                  3'-...N\033[34mNNNNNNN\033[0mN\033[31mN\033[0m-5'
                        |||||||                             |||||||
                 ORF...N\033[33mNNNNNNN\033[0mN...                  ORF...N\033[33mNNNNNNN\033[0mN...        
          
           •        \033[7m'6merA'\033[0m:                            \033[7m'6merB'\033[0m:
                         ...321                               ...321 
-                      3'-...N\033[34mNNNNNN\033[0m\033[31mN\033[0m-5'                  3'-...N\033[34mNNNNNN\033[0mN\033[31mN\033[0m-5'
+                3'-...N\033[34mNNNNNN\033[0m\033[31mN\033[0m-5'                   3'-...N\033[34mNNNNNN\033[0mN\033[31mN\033[0m-5'
                        ||||||                              ||||||
                 ORF...N\033[33mNNNNNN\033[0mN...                   ORF...N\033[33mNNNNNN\033[0mN...
         
@@ -147,8 +147,7 @@ score (absolute and normalized) and the alignment itself.  (default: %default)""
 
     return parser.parse_args()
 
-
-def format_usage(usage):    # Format the usage string
+def format_usage(usage):    		# Format the usage string
     
     def prefix_length(line):
         length = 0
@@ -165,8 +164,7 @@ def format_usage(usage):    # Format the usage string
     plen = min(prefix_length(l) for l in lines if len(l.strip()) > 0)
     return '\n'.join(l[plen:] for l in lines)
 
-
-def read_couples(): # Read the miRNA couples from the file and store them in a list of couples
+def read_couples(): 				# Read the miRNA couples from the file and store them in a list of couples
     couples = []
     
     for line in sys.stdin:
@@ -174,14 +172,31 @@ def read_couples(): # Read the miRNA couples from the file and store them in a l
         couples.append((columns[0], columns[1]))
     return couples
 
-
-def check_sequences(seq1, row):    # Check if the sequences contain characters that are not in the alphabet
+def check_sequences(seq1, row):		# Check if the sequences contain characters that are not in the alphabet
     for i in seq1:
         if i not in all_nt:
             raise ValueError("sequence {} (row {}, first sequence) contains the unknown character {}".format(seq1, row, i))
+        
+def read_fasta_file(fasta_file, allow_na=False):			# Read the fasta file and store the sequences in a dictionary
+    seq_dict = {}
+    with open(fasta_file,"r") as handle:
+        record_number = 0
+        for record in SeqIO.parse(handle, "fasta"):
+            record_number += 1
+            # Check if the sequences contain characters that are not in the alphabet
+            record.seq=record.seq.replace("T", "U")
+            check_sequences(record.seq, record_number)
+            if record.id == "N.A." and allow_na:
+                continue
+            else:
+                seq_dict[record.id] = record.seq
+    return seq_dict
+#____________________________________________________________________________________________________________________
+
+
 
 #_____________________________________________Seed Management________________________________________________________
-def seed_modify(sequence):        # Convert the seed nucleotides of a miRNA to a new alphabet (AUCG--->ZVRB)
+def seed_modify(sequence):        	# Convert the seed nucleotides of a miRNA to a new alphabet (AUCG--->ZVRB)
     l1 = ConvertToList(sequence)
     for i in myRange(final_notseed_bps, final_notseed_bps+seed_length-1, 1):
         for j in range(len(nonseed_nt)):
@@ -191,12 +206,12 @@ def seed_modify(sequence):        # Convert the seed nucleotides of a miRNA to a
     mod_sequence = ConvertToString(l1)
     return mod_sequence
 
-def seed_modify_all(mirnas):    # Convert the seed nucleotides of all the miRNAs in a dictionary to a new alphabet (AUCG--->ZVRB)
+def seed_modify_all(mirnas):    	# Convert the seed nucleotides of all the miRNAs in a dictionary to a new alphabet (AUCG--->ZVRB)
     for key in mirnas.keys():
         mirnas[key] = seed_modify(mirnas[key])
     return mirnas
 
-def seed_restore(sequence):        # Restore the seed nucleotide to the standard alphabet (ZVRB--->AUCG) to display them
+def seed_restore(sequence):        	# Restore the seed nucleotide to the standard alphabet (ZVRB--->AUCG) to display them
     l1 = ConvertToList(sequence)
     
     for i in myRange(len(sequence)-seed_length-final_notseed_bps, len(sequence)-final_notseed_bps-1, 1):
@@ -207,29 +222,25 @@ def seed_restore(sequence):        # Restore the seed nucleotide to the standard
     rest_sequence = ConvertToString(l1)
     return rest_sequence
 
-
-def ConvertToList(string):        # Convert a string to a list
+def ConvertToList(string):        	# Convert a string to a list
     list1 = []
     list1[:0] = string
     return list1
 
-
-def ConvertToString(list):        # Convert a list to a string
+def ConvertToString(list):        	# Convert a list to a string
     str1 = ""
     for elem in list:
         str1 += elem
     return str1
 
-
-def myRange(start,end,step):    # Define a range for the for-loop
+def myRange(start,end,step):    	# Define a range for the for-loop
     i = start
     while i < end:
         yield i
         i += step
         yield end
 
-
-def seed_definition(options):    # Define the seed length from the command line argument
+def seed_definition(options):    	# Define the seed length from the command line argument
     global seed_length
     global final_notseed_bps
     
@@ -249,7 +260,7 @@ def seed_definition(options):    # Define the seed length from the command line 
 
 
 #_____________________________________________Matrices_______________________________________________________________
-def subs_matrix(options):                                    # Define the substitution matrix
+def subs_matrix(options):							# Define the substitution matrix
     
     V = options.match_score                        # Out-of-seed match score
     X = options.mismatch_score                    # Out-of-seed mismatch score
@@ -271,7 +282,7 @@ def subs_matrix(options):                                    # Define the substi
         [    int(X),            int(V),            int(X),            int(X),            int(X),            int(sV),        int(X),            int(Y)    ],    # C
 
         [    int(Y),            int(X),            int(V),            int(X),            int(Y),            int(X),            int(sV),        int(X)    ],    # G                
-                                                                                                                                                        #-----------------------------IN-SEED PORTION-------------------------------    
+                                                                                                                                                        			#-----------------------------IN-SEED PORTION-------------------------------    
         [    int(X),            int(X),            int(X),            int(V),            int(X),            int(X),            int(X),            int(sV)    ],    # U                Z    |                V    |                R    |                B                                                                                                                
         
         [    int(sV),        int(X),            int(Y),            int(X),                                                                                        int(sV),            int(sX),            int(sY),            int(sX)    ],    # Z
@@ -285,8 +296,7 @@ def subs_matrix(options):                                    # Define the substi
 
     return subs_matrix
 
-
-def Sim_matr_to_dic(string1, string2, options):                # Convert the substitution matrix into a dictionary (necessary for the alignment function)
+def Sim_matr_to_dic(string1, string2, options):		# Convert the substitution matrix into a dictionary (necessary for the alignment function)
 
     #convert the substitution matrix into a dictionary
     sm = subs_matrix(options)
@@ -306,13 +316,12 @@ def Sim_matr_to_dic(string1, string2, options):                # Convert the sub
 
 
 #___________________________________________Output/Sequence Format___________________________________________________
-def print_fasta_header(name1, name2, seq1, seq2, file):        # Print the header of the fasta file
+def print_fasta_header(name1, name2, seq1, seq2, file):		# Print the header of the fasta file
 
     #print every alignment in a quasi FASTA format
     print(">{}: {}\t | \t{}: {}".format(name1, seed_restore(seq1), name2, seed_restore(seq2)), file=file)
 
-
-def decorate_alignment_output_single_row(row):                # Decorate the single row of the output to highlight the seed
+def decorate_alignment_output_single_row(row):				# Decorate the single row of the output to highlight the seed
     decorated=""
     for i in row:
         if i in seed_nt_map_reverse.keys():
@@ -321,8 +330,7 @@ def decorate_alignment_output_single_row(row):                # Decorate the sin
             decorated += i.lower()
     return decorated
             
-
-def decorate_alignemnt_output(alignment_string):            # Decorate the alignment output to highlight the seed (for every row)
+def decorate_alignemnt_output(alignment_string):			# Decorate the alignment output to highlight the seed (for every row)
     rows = alignment_string.split("\n")
 
     seq1 = rows[0]
@@ -335,7 +343,6 @@ def decorate_alignemnt_output(alignment_string):            # Decorate the align
     rows[1] = seq_symbols
     rows[2] = decorate_alignment_output_single_row(rows[2])
     return "\n".join(rows)
-
 
 def fix_alignments_match(seq1, seq2, seq_symbols):
 
@@ -370,27 +377,11 @@ def fix_alignments_match(seq1, seq2, seq_symbols):
     seq_symbols = ConvertToString(list3)
 
     return seq1, seq2, seq_symbols
-
-
-
 #____________________________________________________________________________________________________________________
 
 
-def read_fasta_file(fasta_file, allow_na=False):    # Read the fasta file and store the sequences in a dictionary
-    seq_dict = {}
-    with open(fasta_file,"r") as handle:
-        record_number = 0
-        for record in SeqIO.parse(handle, "fasta"):
-            record_number += 1
-            # Check if the sequences contain characters that are not in the alphabet
-            record.seq=record.seq.replace("T", "U")
-            check_sequences(record.seq, record_number)
-            if record.id == "N.A." and allow_na:
-                continue
-            else:
-                seq_dict[record.id] = record.seq
-    return seq_dict
 
+#____________________________________________________Main____________________________________________________________
 def main():
 
     # Ignore the deprecationwarning from Bio.pairwise2
@@ -454,15 +445,15 @@ def main():
 
     ####################################################################################################
         a = pairwise2.align.globalds(seq_i,                                                            #                
-                                    seq_j,                                                                #
-                                    dic_sssmatr,                                                        #
-                                    options.gap_open,                                                    #
+                                    seq_j,                                                             #
+                                    dic_sssmatr,                                                       #
+                                    options.gap_open,                                                  #
                                     options.gap_extend,                                                #
-                                                                                                        #
+                                                                                                       #
                                     one_alignment_only = options.one_alignment,                        #
-                                    score_only = options.score_only,                                    #
-                                    penalize_end_gaps = options.penalize_end_gaps,                        #
-                                    penalize_extend_when_opening = False)                               #
+                                    score_only = options.score_only,                                   #
+                                    penalize_end_gaps = options.penalize_end_gaps,                     #
+                                    penalize_extend_when_opening = False)                              #
     ####################################################################################################
 
         #normalized_score = mathematically_accurate_normalized_score(a[0][2], options, seq_i, seq_j, dic_sssmatr)
@@ -489,6 +480,7 @@ if __name__=='__main__':
     
     ignore_broken_pipe(main)
 
+#____________________________________________________________________________________________________________________
 
 
     
