@@ -9,7 +9,9 @@ This version of the Needleman-Wunsch algorithm has been optimized to align miRNA
 
 ### Usage and options:
 ```
-...soon
+Usage: miRAl [OPTIONS] fasta.fa [fasta2.fa] < couples.tsv >output.tsv
+
+...
 ```
 
 
