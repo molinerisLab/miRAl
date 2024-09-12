@@ -45,8 +45,11 @@ Options:
                             format, where the header contains the names of the two
                             aligned sequences while the "body" contains the
                             alignment score (absolute and normalized) and the
-...
 ```
+
+The different types of seed can be visualized as follows:
+
+
 
 
 [![DOI](https://zenodo.org/badge/852122116.svg)](https://zenodo.org/doi/10.5281/zenodo.13683069)
