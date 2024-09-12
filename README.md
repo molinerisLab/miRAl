@@ -5,16 +5,7 @@ Optimized tool to perform the Needleman-Wunsch algorithm to align mature miRNA s
 ```conda install -c molinerislab miRAl```
 
 ### Description:
-Needleman-Wunsch alignment given a list of couples of miRNAs in .tsv format structured as follows: \
-                    ```mature_miRNA1     \t    mature_miRNA2 ``` \
-and a fasta file containing the sequences of the miRNAs perform the alignmetn between the sequences of the two miRNAs in the couple                                                                
-
-The output file is a .tsv file structured as follows: \
-                    ```mature_miRNA1     \t    mature_miRNA2     \t    Needleman-Wunsch score ```
-
-```mature_miRNA1``` and ```mature_miRNA2``` are referenced with their standard name (e.g. hsa-let-7a-1).
-
-```-f``` ```-a``` options add a second output file in a simil-FASTA format, where the header contains the names of the two aligned sequences while the "body" contains the alignment score and the alignment itself    
+Needleman-Wunsch alignment of mature miRNAs with tje possibility to weight differently the nucleotides in the miRNA seed. The tool can also return a FASTA file with the alignment in addition to the file with the Needleman-Wunsch scores. 
 
 ### Usage and options:
 ```
@@ -48,7 +39,7 @@ Options:
 ```
 
 The different types of seed can be visualized as follows:
-
+![Alt text](images/different_seeds.png)
 
 
 
