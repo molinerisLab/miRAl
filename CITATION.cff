@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: Agasso
+    given-names: Leonardo
+  - family-names: Caselle
+    given-names: Michele
+    orcid: https://orcid.org/0000-0001-5488-142X
+  - family-names: Molineris
+    given-names: Ivan
+    orcid: https://orcid.org/0000-0003-2102-0804
+title: "Align miRNA sequence more carefully with miRAl"
+version: 0.1.1
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.13683070
+date-released: 2024-09-04
