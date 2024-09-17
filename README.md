@@ -41,6 +41,8 @@ Options:
 The different types of seed can be visualized as follows:
 ![Alt text](images/different_seeds.png)
 
+The additional output FASTA file with the alignment, is composed of blocks like the following one:
+![Alt text](images/alignment_output.png)
 
 
 [![DOI](https://zenodo.org/badge/852122116.svg)](https://zenodo.org/doi/10.5281/zenodo.13683069)
