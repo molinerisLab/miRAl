@@ -10,7 +10,7 @@ authors:
     given-names: Ivan
     orcid: https://orcid.org/0000-0003-2102-0804
 title: "Align miRNA sequence more carefully with miRAl"
-version: 1.0.1
+version: 0.1.1
 identifiers:
   - type: doi
     value: 10.5281/zenodo.13683070
